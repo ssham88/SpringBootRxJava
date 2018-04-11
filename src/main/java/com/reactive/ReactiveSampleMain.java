@@ -1,13 +1,12 @@
 package com.reactive;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import rx.Observable;
 import rx.Subscriber;
-import rx.functions.Func1;
 
 public class ReactiveSampleMain {
+	static String result = "";
+	private static String evenList = "";
+	private static String oddList = "";
 	public static void main(String args[]) {
 		//1 
 		//Observable<String> observable = Observable.just("Hello");
@@ -82,7 +81,71 @@ public class ReactiveSampleMain {
 				System.out.println("Next... "+t);	
 			}
 		};	
-		
+		//i
 		observable.subscribe(subscriber);
+		
+		//ii
+		String[] letters = {"a", "b", "c", "d", "e", "f", "g"};
+		Observable<String> observable1 = Observable.from(letters);
+		observable1.subscribe(
+		  i -> result += i,  //OnNext
+		  Throwable::printStackTrace, //OnError
+		  () -> System.out.println(result +"_Completed") //OnCompleted
+		);
+		
+		//iii
+		result = "";
+		Observable.from(letters)
+				.map(i->i.toUpperCase())
+				.subscribe(
+						i->result+=i,
+						Throwable::printStackTrace,
+						()->System.out.println(result)
+						);
+		
+		//iv
+		result = "";
+		Observable.just("Hi ", "Hello").subscribe(s->result+=s,Throwable::printStackTrace,
+				()->System.out.println(result));
+		
+		//v
+		result = "";
+		Observable.from(letters)
+		.scan(new StringBuilder(),StringBuilder::append)
+		.subscribe(i->result+=i,Throwable::printStackTrace,()->System.out.println(result));
+		
+		//vi
+		Integer[] numbers = {1,2,3,4,5,6,7,8,9};
+		Observable.from(numbers).groupBy(i -> 0 == (i % 2) ? "EVEN" : "ODD")
+		.subscribe(group -> group.subscribe(n -> {
+			if (group.getKey().equals("EVEN")) {
+				evenList += n;
+			}else {
+				oddList += n;
+			}
+		}),Throwable::printStackTrace,
+			() ->System.out.println("EvenList " +evenList+ " OddList "+oddList));
+		
+		//vii
+		evenList = "";
+		Observable.from(numbers).filter(n->(n%2)==0)
+		.subscribe(i->evenList+=i,Throwable::printStackTrace,()->System.out.println(evenList));
+		
+		//viii
+		result = "";
+		Observable.empty().defaultIfEmpty("I am Empty").subscribe(i->result+=i,
+				Throwable::printStackTrace,()->System.out.println(result));
+		
+		//ix
+		result = "";
+		Observable.from(letters).defaultIfEmpty("I am Empty").first().subscribe(i->result+=i,
+				Throwable::printStackTrace,()->System.out.println(result));
+		
+		//x
+		result = "";
+		Observable.from(numbers).takeWhile(i->i<5)
+		.subscribe(i->result+=i,Throwable::printStackTrace,()->System.out.println(result));
+		
 	}
+
 }
