@@ -19,7 +19,7 @@ public class ReactiveSampleMain {
 		stringArray.add("4");
 		Observable<String> observable = Observable.from(stringArray);*/
 		//3
-		Observable<Integer> observable = Observable.just("5").map(new Func1<String ,String>() {
+		/*Observable<Integer> observable = Observable.just("5").map(new Func1<String ,String>() {
 
 			@Override
 			public String call(String t) {
@@ -41,7 +41,11 @@ public class ReactiveSampleMain {
 			 //return Integer.parseInt(t); OUTPUT : ERROR!!!
 				return 10;
 			}
-		});
+		});*/
+		Observable<Integer> observable = Observable.just("5")
+				.map(t->"Hi"+t)
+				.map(t->t +" dude!!")
+				.map(t->10);
 		//1
 		/*Subscriber<String> subscriber = new Subscriber<String>() {
 
