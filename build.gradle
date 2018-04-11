@@ -1,0 +1,17 @@
+plugins{
+	 id 'org.springframework.boot' version '2.0.0.RELEASE'
+	 id 'java'
+     id 'eclipse'
+}
+
+archivesBaseName = 'SpringBootRxJava'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+	mavenCentral()
+}
+dependencies{
+	compile('org.springframework.boot:spring-boot-starter-web:2.0.0.RELEASE')
+	compile('io.reactivex:rxjava:1.3.4')
+}
+
