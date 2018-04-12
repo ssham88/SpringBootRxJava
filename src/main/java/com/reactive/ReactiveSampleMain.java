@@ -1,23 +1,29 @@
 package com.reactive;
 
+import java.util.concurrent.TimeUnit;
+
 import rx.Observable;
+import rx.Observer;
+import rx.Single;
 import rx.Subscriber;
+import rx.observables.ConnectableObservable;
+import rx.subjects.PublishSubject;
 
 public class ReactiveSampleMain {
-	static String result = "";
+	private static String result = "";
 	private static String evenList = "";
 	private static String oddList = "";
 	public static void main(String args[]) {
-		//1 
+		//1 --------------------------------
 		//Observable<String> observable = Observable.just("Hello");
-		//2
+		//2---------------------------------
 		/*List<String> stringArray = new ArrayList<>();
 		stringArray.add("1");
 		stringArray.add("2");
 		stringArray.add("3");
 		stringArray.add("4");
 		Observable<String> observable = Observable.from(stringArray);*/
-		//3
+		//3---------------------------------
 		/*Observable<Integer> observable = Observable.just("5").map(new Func1<String ,String>() {
 
 			@Override
@@ -45,7 +51,7 @@ public class ReactiveSampleMain {
 				.map(t->"Hi"+t)
 				.map(t->t +" dude!!")
 				.map(t->10);
-		//1
+		//1---------------------------------
 		/*Subscriber<String> subscriber = new Subscriber<String>() {
 
 			@Override
@@ -63,7 +69,7 @@ public class ReactiveSampleMain {
 				System.out.println("Next... "+t);	
 			}
 		};*/
-		//2
+		//2---------------------------------
 		Subscriber<Integer> subscriber = new Subscriber<Integer>() {
 
 			@Override
@@ -81,10 +87,10 @@ public class ReactiveSampleMain {
 				System.out.println("Next... "+t);	
 			}
 		};	
-		//i
+		//i---------------------------------
 		observable.subscribe(subscriber);
 		
-		//ii
+		//ii---------------------------------
 		String[] letters = {"a", "b", "c", "d", "e", "f", "g"};
 		Observable<String> observable1 = Observable.from(letters);
 		observable1.subscribe(
@@ -93,7 +99,7 @@ public class ReactiveSampleMain {
 		  () -> System.out.println(result +"_Completed") //OnCompleted
 		);
 		
-		//iii
+		//iii---------------------------------
 		result = "";
 		Observable.from(letters)
 				.map(i->i.toUpperCase())
@@ -103,18 +109,18 @@ public class ReactiveSampleMain {
 						()->System.out.println(result)
 						);
 		
-		//iv
+		//iv---------------------------------
 		result = "";
 		Observable.just("Hi ", "Hello").subscribe(s->result+=s,Throwable::printStackTrace,
 				()->System.out.println(result));
 		
-		//v
+		//v---------------------------------
 		result = "";
 		Observable.from(letters)
 		.scan(new StringBuilder(),StringBuilder::append)
 		.subscribe(i->result+=i,Throwable::printStackTrace,()->System.out.println(result));
 		
-		//vi
+		//vi---------------------------------
 		Integer[] numbers = {1,2,3,4,5,6,7,8,9};
 		Observable.from(numbers).groupBy(i -> 0 == (i % 2) ? "EVEN" : "ODD")
 		.subscribe(group -> group.subscribe(n -> {
@@ -126,26 +132,93 @@ public class ReactiveSampleMain {
 		}),Throwable::printStackTrace,
 			() ->System.out.println("EvenList " +evenList+ " OddList "+oddList));
 		
-		//vii
+		//vii---------------------------------
 		evenList = "";
 		Observable.from(numbers).filter(n->(n%2)==0)
 		.subscribe(i->evenList+=i,Throwable::printStackTrace,()->System.out.println(evenList));
 		
-		//viii
+		//viii---------------------------------
 		result = "";
 		Observable.empty().defaultIfEmpty("I am Empty").subscribe(i->result+=i,
 				Throwable::printStackTrace,()->System.out.println(result));
 		
-		//ix
+		//ix---------------------------------
 		result = "";
 		Observable.from(letters).defaultIfEmpty("I am Empty").first().subscribe(i->result+=i,
 				Throwable::printStackTrace,()->System.out.println(result));
 		
-		//x
+		//x---------------------------------
 		result = "";
 		Observable.from(numbers).takeWhile(i->i<5)
 		.subscribe(i->result+=i,Throwable::printStackTrace,()->System.out.println(result));
 		
+		//xi -- ConnectableObservable---------------------------------
+		result = "";
+		ConnectableObservable<Long> connectable = Observable
+				.interval(200, TimeUnit.MILLISECONDS).publish();
+		connectable.subscribe(i->result+=i,
+				Throwable::printStackTrace,()->System.out.println(result));
+		connectable.connect();
+		System.out.println(result);
+		
+		//xii -- Single---------------------------------
+		result = "";
+		Single<String> single = Observable.just("Hello").toSingle()
+		.doOnSuccess(i->result+=i)
+		.doOnError(e->{throw new RuntimeException(e.getMessage());});
+		single.subscribe();
+		
+		//xiii -- Subjects---------------------------------
+		PublishSubject<String> ps= PublishSubject.create();//Observable
+		ps.subscribe(getFirstObserver());
+		ps.onNext("One");
+		ps.onNext("Two");
+		ps.onNext("Three");
+		ps.subscribe(getSecondObserver());
+		ps.onNext("Four");
+		ps.onNext("Five");
+		ps.onCompleted();
+		
+	}
+	private static Observer<String> getFirstObserver() {//subscriber
+		return new Observer<String>() {
+
+			@Override
+			public void onCompleted() {
+				System.out.println("Completed...getFirstObserver()");
+			}
+
+			@Override
+			public void onError(Throwable e) {
+				System.out.println("ERROR!! ...getFirstObserver()");
+			}
+
+			@Override
+			public void onNext(String t) {
+				System.out.println("Next...getFirstObserver()"+t);
+			}
+			
+		};
+	}
+	private static Observer<String> getSecondObserver() {//subscriber
+		return new Observer<String>() {
+
+			@Override
+			public void onCompleted() {
+				System.out.println("Completed...getSecondObserver()");
+			}
+
+			@Override
+			public void onError(Throwable e) {
+				System.out.println("ERROR!! ...getSecondObserver()");
+			}
+
+			@Override
+			public void onNext(String t) {
+				System.out.println("Next...getSecondObserver()"+t);
+			}
+			
+		};
 	}
 
 }
